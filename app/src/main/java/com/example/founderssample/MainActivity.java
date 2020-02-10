@@ -1,5 +1,6 @@
 package com.example.founderssample;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -9,7 +10,10 @@ import com.samsung.android.sdk.blockchain.CoinType;
 import com.samsung.android.sdk.blockchain.ListenableFutureTask;
 import com.samsung.android.sdk.blockchain.SBlockchain;
 import com.samsung.android.sdk.blockchain.account.Account;
+import com.samsung.android.sdk.blockchain.account.ethereum.EthereumAccount;
 import com.samsung.android.sdk.blockchain.coinservice.CoinNetworkInfo;
+import com.samsung.android.sdk.blockchain.coinservice.CoinServiceFactory;
+import com.samsung.android.sdk.blockchain.coinservice.ethereum.EthereumService;
 import com.samsung.android.sdk.blockchain.exception.SsdkUnsupportedException;
 import com.samsung.android.sdk.blockchain.network.EthereumNetworkType;
 import com.samsung.android.sdk.blockchain.wallet.HardwareWallet;
@@ -27,6 +31,7 @@ import android.widget.Toast;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -99,6 +104,44 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        paymentSheetBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                paymentSheet();
+            }
+        });
+
+
+    }
+
+    private void paymentSheet(){
+        CoinNetworkInfo coinNetworkInfo = new CoinNetworkInfo(
+                CoinType.ETH,
+                EthereumNetworkType.ROPSTEN,
+                "https://ropsten.infura.io/v3/8ed1117da130482fb477c9d47fff3043"
+        );
+        List<Account> accounts = sBlockchain.getAccountManager()
+                .getAccounts(
+                        wallet.getWalletId(),
+                        CoinType.ETH,
+                        EthereumNetworkType.ROPSTEN
+                );
+        //CoinServiceFactory는 이더리움에 관한 함수들의 집합체를 받을 수 있음.
+        EthereumService ethereumService = (EthereumService) CoinServiceFactory.getCoinService(this, coinNetworkInfo );
+        //트랜잭션에 데이터 넣어서 스마트컨트랙터 보낼 수 있음(String s1 파라미터)
+        Intent intent = ethereumService
+                .createEthereumPaymentSheetActivityIntent(
+                        this,
+                        wallet,
+                        (EthereumAccount) accounts.get(0),
+                         "0xedC1618A6DA5Bc98E08482189351C17B9aC45Dc4",
+                        new BigInteger("1000000000000000"),
+                        null,
+                        null
+                );
+        startActivityForResult(intent,0);
+
+
 
     }
     private void getAccounts(){
@@ -125,7 +168,7 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onFailure(@NotNull ExecutionException e) {
-
+                        Log.d("MyApp" , e.toString());
                     }
 
                     @Override
