@@ -12,31 +12,42 @@
     <Button
         android:id="@+id/connect"
         android:layout_width="match_parent"
-        android:layout_height="94dp"
+        android:layout_height="wrap_content"
         android:text="Connect" />
 
     <Button
         android:id="@+id/generateAccount"
         android:layout_width="match_parent"
-        android:layout_height="149dp"
+        android:layout_height="wrap_content"
         android:text="generateAccount" />
 
     <Button
         android:id="@+id/getAccounts"
         android:layout_width="match_parent"
-        android:layout_height="144dp"
+        android:layout_height="wrap_content"
         android:text="getAccounts" />
 
     <Button
         android:id="@+id/paymentsheet"
         android:layout_width="match_parent"
-        android:layout_height="156dp"
+        android:layout_height="wrap_content"
         android:text="paymentsheet" />
 
     <Button
         android:id="@+id/sendSmartContract"
         android:layout_width="match_parent"
-        android:layout_height="129dp"
+        android:layout_height="wrap_content"
         android:text="sendSmartContract" />
+
+    <Button
+        android:id="@+id/webViewInit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="webViewInit" />
+
+    <com.samsung.android.sdk.blockchain.ui.CucumberWebView
+        android:id="@+id/cucumberWebView"
+        android:layout_width="match_parent"
+        android:layout_height="383dp" />
 
 </LinearLayout>

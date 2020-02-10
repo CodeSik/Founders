@@ -5,7 +5,6 @@ import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
-import com.ledger.lib.apps.eth.Eth;
 import com.samsung.android.sdk.blockchain.CoinType;
 import com.samsung.android.sdk.blockchain.ListenableFutureTask;
 import com.samsung.android.sdk.blockchain.SBlockchain;
@@ -14,8 +13,12 @@ import com.samsung.android.sdk.blockchain.account.ethereum.EthereumAccount;
 import com.samsung.android.sdk.blockchain.coinservice.CoinNetworkInfo;
 import com.samsung.android.sdk.blockchain.coinservice.CoinServiceFactory;
 import com.samsung.android.sdk.blockchain.coinservice.ethereum.EthereumService;
+import com.samsung.android.sdk.blockchain.coinservice.ethereum.EthereumUtils;
+import com.samsung.android.sdk.blockchain.exception.AvailabilityException;
 import com.samsung.android.sdk.blockchain.exception.SsdkUnsupportedException;
 import com.samsung.android.sdk.blockchain.network.EthereumNetworkType;
+import com.samsung.android.sdk.blockchain.ui.CucumberWebView;
+import com.samsung.android.sdk.blockchain.ui.OnSendTransactionListener;
 import com.samsung.android.sdk.blockchain.wallet.HardwareWallet;
 import com.samsung.android.sdk.blockchain.wallet.HardwareWalletType;
 
@@ -26,31 +29,30 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.webkit.WebView;
 import android.widget.Button;
-import android.widget.Toast;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import javax.net.ssl.SNIHostName;
-
-import static java.security.AccessController.getContext;
-
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements OnSendTransactionListener {
 
     Button connectBtn;
     Button generateAccountBtn;
     Button getAccountsBtn;
     Button paymentSheetBtn;
-    Button sentSmartContractBtn;
+    Button sendSmartContractBtn;
+    Button webViewInitBtn;
     private SBlockchain sBlockchain;
     private HardwareWallet wallet;
     private Account generateAccount;
-
+    private CucumberWebView webView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,7 +82,9 @@ public class MainActivity extends AppCompatActivity {
         generateAccountBtn= findViewById(R.id.generateAccount);
         getAccountsBtn= findViewById(R.id.getAccounts);
         paymentSheetBtn= findViewById(R.id.paymentsheet);
-        sentSmartContractBtn= findViewById(R.id.sendSmartContract);
+        sendSmartContractBtn= findViewById(R.id.sendSmartContract);
+        webViewInitBtn = findViewById(R.id.webViewInit);
+        webView = findViewById(R.id.cucumberWebView);
 
         // 얘가 버튼 클릭했을 때 실행되는 코드
         connectBtn.setOnClickListener(new View.OnClickListener() {
@@ -111,8 +115,94 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        sendSmartContractBtn.setOnClickListener((new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+              //나중에!!  sendSmartContract();
+            }
+        }));
+
+        webViewInitBtn.setOnClickListener((new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                webViewInit();
+            }
+        }));
+    }
+
+
+    private String add () {
+        return "더하기";
+    }
+    private void webViewInit(){
+        CoinNetworkInfo coinNetworkInfo = new CoinNetworkInfo(
+                CoinType.ETH,
+                EthereumNetworkType.ROPSTEN,
+                "https://ropsten.infura.io/v3/8ed1117da130482fb477c9d47fff3043"
+        );
+        List<Account> accounts = sBlockchain.getAccountManager()
+                .getAccounts(
+                        wallet.getWalletId(),
+                        CoinType.ETH,
+                        EthereumNetworkType.ROPSTEN
+                );
+        //CoinServiceFactory는 이더리움에 관한 함수들의 집합체를 받을 수 있음.
+        EthereumService ethereumService = (EthereumService) CoinServiceFactory
+                .getCoinService(this, coinNetworkInfo );
+
+        webView.init(ethereumService,accounts.get(0),this);
+        webView.loadUrl("https://faucet.ropsten.be/");
 
     }
+    /*
+    private void sendSmartContract(){
+        CoinNetworkInfo coinNetworkInfo = new CoinNetworkInfo(
+                CoinType.ETH,
+                EthereumNetworkType.ROPSTEN,
+                "https://ropsten.infura.io/v3/8ed1117da130482fb477c9d47fff3043"
+        );
+        List<Account> accounts = sBlockchain.getAccountManager()
+                .getAccounts(
+                        wallet.getWalletId(),
+                        CoinType.ETH,
+                        EthereumNetworkType.ROPSTEN
+                );
+        EthereumService etherService = (EthereumService) CoinServiceFactory.getCoinService(this, coinNetworkInfo );
+        //인텐트 관련 코드 추가 필요
+        try {
+            etherService
+                    .sendSmartContractTransaction(
+                            wallet,
+                            (EthereumAccount) accounts.get(0),
+                            "0xFab46E002BbF0b4509813474841E0716E6730136",
+                            EthereumUtils.convertGweiToWei(new BigDecimal("10")),
+                            new BigInteger("500000"),
+                            add(),
+                            null,
+                            null
+                    )
+                    .setCallback(
+                            new ListenableFutureTask.Callback<TransactionResult>() {
+                                @Override
+                                public void onSuccess(TransactionResult result) {
+                                    //success
+                                }
+                                @Override
+                                public void onFailure(ExecutionException exception) {
+                                    //failure
+                                }
+                                @Override
+                                public void onCancelled(InterruptedException exception) {
+                                    //cancelled
+                                }
+                            });
+        } catch (AvailabilityException e) {
+            //handle exception
+        }
+
+
+    }
+*/
 
     private void paymentSheet(){
         CoinNetworkInfo coinNetworkInfo = new CoinNetworkInfo(
@@ -222,5 +312,43 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onSendTransaction(
+            @NotNull String requestId,
+            @NotNull EthereumAccount fromAccount,
+            @NotNull String toAddress,
+            @org.jetbrains.annotations.Nullable BigInteger value,
+            @org.jetbrains.annotations.Nullable String data,
+            @org.jetbrains.annotations.Nullable BigInteger nonce
+    ) {
+        HardwareWallet connectedHardwareWallet =
+                sBlockchain.getHardwareWalletManager().getConnectedHardwareWallet();
+        Intent intent =
+                webView.createEthereumPaymentSheetActivityIntent(
+                        this,
+                        requestId,
+                        connectedHardwareWallet,
+                        toAddress,
+                        value,
+                        data,
+                        nonce
+                );
+
+        startActivityForResult(intent, 0);
+
+    }
+
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode != 0) {
+            return;
+        }
+
+        webView.onActivityResult(requestCode, resultCode, data);
     }
 }
