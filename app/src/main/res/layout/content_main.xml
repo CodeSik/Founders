@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context=".MainActivity"
+    tools:showIn="@layout/activity_main">
+
+    <Button
+        android:id="@+id/connect"
+        android:layout_width="match_parent"
+        android:layout_height="94dp"
+        android:text="Connect" />
+
+    <Button
+        android:id="@+id/generateAccount"
+        android:layout_width="match_parent"
+        android:layout_height="149dp"
+        android:text="generateAccount" />
+
+    <Button
+        android:id="@+id/getAccounts"
+        android:layout_width="match_parent"
+        android:layout_height="144dp"
+        android:text="getAccounts" />
+
+    <Button
+        android:id="@+id/paymentsheet"
+        android:layout_width="match_parent"
+        android:layout_height="156dp"
+        android:text="paymentsheet" />
+
+    <Button
+        android:id="@+id/sendSmartContract"
+        android:layout_width="match_parent"
+        android:layout_height="129dp"
+        android:text="sendSmartContract" />
+
+</LinearLayout>
